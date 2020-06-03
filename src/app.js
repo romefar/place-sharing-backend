@@ -8,11 +8,20 @@ const usersRoute = require('./routes/users')
 const app = express()
 
 app.use(express.json())
+
+// allow cors
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE')
+  next()
+})
+
 app.use('/api/places', placeRoute)
 app.use('/api/users', usersRoute)
 
 app.use((req, res, next) => {
-  next(new HttpError('Coudln\'t find reach this route.'), 404)
+  next(new HttpError('Coudln\'t reach this route.'), 404)
 })
 
 app.use((error, req, res, next) => {
@@ -24,7 +33,7 @@ app.use((error, req, res, next) => {
   })
 })
 
-const port = process.env.PORT || 3000
+const port = process.env.PORT || 3001
 
 dbConnect()
   .then(() => {
