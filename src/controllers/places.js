@@ -13,7 +13,7 @@ const getPlaceById = async (req, res, next) => {
       throw new HttpError('Couldn\'t find a place for the provided id.', 404)
     }
 
-    res.send({ place })
+    res.send({ place: place.toObject({ getters: true }) })
   } catch (error) {
     return next(error)
   }
@@ -24,11 +24,11 @@ const getPlacesByUserId = async (req, res, next) => {
     const { uid } = req.params
     const places = await Place.find({ creatorId: uid })
 
-    if (!places || places.length === 0) {
+    if (!places) {
       throw new HttpError('Couldn\'t find places for the provided user id.', 404)
     }
 
-    res.send({ places })
+    res.send({ places: places.map(p => p.toObject({ getters: true })) })
   } catch (error) {
     return next(error)
   }
