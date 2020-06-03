@@ -11,7 +11,7 @@ router.get('/', getUsers)
 router.post('/signup', [
   check('name').not().isEmpty(),
   check('email').normalizeEmail().isEmail(),
-  check('password').isLength({ min: 8 })
+  check('password').isLength({ min: 7 })
 ], signUp)
 router.post('/login', login)
 
