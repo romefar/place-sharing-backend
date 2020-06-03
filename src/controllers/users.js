@@ -5,7 +5,7 @@ const User = require('../models/user')
 const getUsers = async (req, res, next) => {
   try {
     const users = await User.find({}, '-password')
-    res.send({ users })
+    res.send({ users: users.map((user) => user.toObject({ getters: true })) })
   } catch (error) {
     return next(error)
   }
@@ -30,7 +30,7 @@ const signUp = async (req, res, next) => {
       places: []
     })
     await user.save()
-    res.status(201).send({ user })
+    res.status(201).send({ user: user.toObject({ getters: true }) })
   } catch (error) {
     return next(error)
   }
@@ -43,7 +43,7 @@ const login = async (req, res, next) => {
     if (!user || user.password !== password) {
       throw new HttpError('Couldn\'t identify a user.', 401)
     }
-    res.send({ message: 'Logged in.' })
+    res.send({ message: 'Logged in.', user: user.toObject({ getters: true }) })
   } catch (error) {
     return next(error)
   }
