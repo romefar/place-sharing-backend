@@ -1,6 +1,9 @@
 const HttpError = require('../models/http-error')
+const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 const { validationResult } = require('express-validator')
 const User = require('../models/user')
+require('dotenv/config')
 
 const getUsers = async (req, res, next) => {
   try {
@@ -22,15 +25,20 @@ const signUp = async (req, res, next) => {
     if (exUser) {
       throw new HttpError('User is already exists.', 422)
     }
+    const hashedPassword = await bcrypt.hash(password, 12)
     const user = new User({
       name,
       email,
-      password,
-      image: 'https://www.dovercourt.org/wp-content/uploads/2019/11/610-6104451_image-placeholder-png-user-profile-placeholder-image-png.jpg',
+      password: hashedPassword,
+      image: req.file.path,
       places: []
     })
+
     await user.save()
-    res.status(201).send({ user: user.toObject({ getters: true }) })
+
+    const token = jwt.sign({ userId: user.id }, process.env.SECRET_KEY, { expiresIn: '2 days' })
+
+    res.status(201).send({ userId: user.id, token })
   } catch (error) {
     return next(error)
   }
@@ -39,11 +47,16 @@ const signUp = async (req, res, next) => {
 const login = async (req, res, next) => {
   try {
     const { email, password } = req.body
-    const user = await User.findOne({ email, password })
-    if (!user || user.password !== password) {
+    const user = await User.findOne({ email })
+    if (!user) {
       throw new HttpError('Couldn\'t identify a user.', 401)
     }
-    res.send({ message: 'Logged in.', user: user.toObject({ getters: true }) })
+    const isValidPassword = await bcrypt.compare(password, user.password)
+    if (!isValidPassword) {
+      throw new HttpError('Couldn\'t identify a user.', 401)
+    }
+    const token = jwt.sign({ userId: user.id }, process.env.SECRET_KEY, { expiresIn: '2 days' })
+    res.send({ userId: user.id, token })
   } catch (error) {
     return next(error)
   }
