@@ -1,13 +1,15 @@
 const express = require('express')
 const HttpError = require('./models/http-error')
 const dbConnect = require('./db/mongoose')
-
+const fs = require('fs')
+const path = require('path')
 const placeRoute = require('./routes/places')
 const usersRoute = require('./routes/users')
 
 const app = express()
 
 app.use(express.json())
+app.use('/uploads/images', express.static(path.join('uploads', 'images')))
 
 // allow cors
 app.use((req, res, next) => {
@@ -25,11 +27,18 @@ app.use((req, res, next) => {
 })
 
 app.use((error, req, res, next) => {
+  if (req.file) {
+    // romeve file
+    fs.unlink(req.file.path, (err) => {
+      // add error handler
+      console.log(err)
+    })
+  }
   if (res.headerSent) {
     return next(error)
   }
   res.status(error.code || 500).send({
-    message: error.message || 'An unknows error occured.'
+    message: error.message || 'An unknown error occured.'
   })
 })
 
