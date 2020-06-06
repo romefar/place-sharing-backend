@@ -9,7 +9,7 @@ const {
   createPlace,
   updatePlace,
   deletePlace
-} = require('../controllers/places')
+} = require('../api/controllers/places-controller')
 
 router.get(
   '/:pid',
