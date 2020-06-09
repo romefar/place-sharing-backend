@@ -6,7 +6,7 @@ const {
   signUp,
   login,
   getUsers
-} = require('../controllers/users')
+} = require('../api/controllers/users-controller')
 
 router.get('/', getUsers)
 router.post('/signup',

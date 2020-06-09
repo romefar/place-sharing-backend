@@ -10,6 +10,7 @@ const app = express()
 
 app.use(express.json())
 app.use('/uploads/images', express.static(path.join('uploads', 'images')))
+app.use('/assets', express.static(path.join('assets')))
 
 // allow cors
 app.use((req, res, next) => {
@@ -31,7 +32,7 @@ app.use((error, req, res, next) => {
     // romeve file
     fs.unlink(req.file.path, (err) => {
       // add error handler
-      console.log(err)
+      if (err) console.log(err)
     })
   }
   if (res.headerSent) {
