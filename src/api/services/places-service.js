@@ -3,6 +3,7 @@ const usersRepository = require('../data-access-layer/users-repository')
 const BaseService = require('../services/base-service')
 const HttpError = require('../../models/http-error')
 const fs = require('fs')
+const geocode = require('../../geocoding/forward-geo')
 
 class PlacesService extends BaseService {
   constructor () {
@@ -40,16 +41,16 @@ class PlacesService extends BaseService {
       throw new HttpError('Could\'t find a user.', 404)
     }
 
+    // forward geocoding with opencage API
+    const location = await geocode(address)
+
     const createdPlace = await this.repository.create({
       title,
       description,
       address,
       image,
       creatorId,
-      location: { // Replace with a geocoder later (OpenCage or etc.)
-        lat: 40.7484445,
-        lng: -73.9878531
-      }
+      location
     }, user)
 
     return createdPlace
@@ -74,7 +75,11 @@ class PlacesService extends BaseService {
     }
     const deletedPlace = await this.repository.delete(pid, uid)
     const imagePath = place.image
-    fs.unlink(imagePath, (err) => console.log('Image deleted err ' + err))
+    fs.unlink(imagePath, (err) => {
+      if (err) {
+        console.log(err)
+      }
+    })
     return deletedPlace
   }
 }
